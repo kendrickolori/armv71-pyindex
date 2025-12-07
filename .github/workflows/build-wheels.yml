@@ -1,10 +1,6 @@
 name: Build ARM Wheels
 
 on:
-  push:
-    branches: [ master ]
-    paths:
-      - 'packages.toml'
   workflow_dispatch:
 
 jobs:
@@ -35,14 +31,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildx-
     
-    - name: Cache built wheels
-      uses: actions/cache@v4
-      with:
-        path: dist/
-        key: wheels-${{ hashFiles('packages.toml') }}
-        restore-keys: |
-          wheels-
-    
     - name: Install dependencies
       run: |
         pip install toml build wheel
@@ -59,16 +47,18 @@ jobs:
     - name: Generate index
       run: |
         python generate_index.py
+        touch dist/.nojekyll
+    
+    - name: Commit and push wheels to repo
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add dist/
+        git commit -m "Build wheels: $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+        git push
     
     - name: Upload wheels artifact
       uses: actions/upload-artifact@v4
       with:
         name: wheels
         path: dist/
-    
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./dist
-        force_orphan: true
