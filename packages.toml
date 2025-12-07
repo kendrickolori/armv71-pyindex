@@ -1,6 +1,9 @@
 # List packages you want pre-built for armv7l
 # Add new packages here and the workflow will build them
 
+# Python versions to build for
+python_versions = ["3.11", "3.12"]
+
 [[package]]
 name = "rpds-py"
 version = "0.30.0"
@@ -12,8 +15,3 @@ version = "12.0.0"
 [[package]]
 name = "pyyaml"
 version = "6.0.3"
-
-# Add more packages as needed:
-# [[package]]
-# name = "cryptography"
-# version = "41.0.7"
