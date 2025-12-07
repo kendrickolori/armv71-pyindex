@@ -11,7 +11,7 @@ def build_wheel_in_docker(package_name, version):
     
     # Create a temporary Dockerfile
     dockerfile_content = f"""
-FROM arm32v7/python:3.11-slim
+FROM python:3.11-slim
 
 RUN apt-get update && apt-get install -y \\
     gcc g++ make \\
@@ -27,12 +27,14 @@ CMD pip wheel {package_name}=={version} --no-deps -w /output
     
     Path("Dockerfile.build").write_text(dockerfile_content)
     
-    # Build the Docker image
+    # Build the Docker image for ARM platform
     print(f"Building {package_name}=={version}...")
     subprocess.run([
-        "docker", "build",
+        "docker", "buildx", "build",
+        "--platform", "linux/arm/v7",
         "-f", "Dockerfile.build",
         "-t", f"wheel-builder-{package_name}",
+        "--load",
         "."
     ], check=True)
     
@@ -40,6 +42,7 @@ CMD pip wheel {package_name}=={version} --no-deps -w /output
     os.makedirs("dist", exist_ok=True)
     subprocess.run([
         "docker", "run",
+        "--platform", "linux/arm/v7",
         "--rm",
         "-v", f"{os.getcwd()}/dist:/output",
         f"wheel-builder-{package_name}"

@@ -38,7 +38,10 @@ jobs:
     - name: Set up QEMU for ARM emulation
       uses: docker/setup-qemu-action@v3
       with:
-        platforms: arm
+        platforms: linux/arm/v7
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
     
     - name: Build wheels for ARM
       run: |
