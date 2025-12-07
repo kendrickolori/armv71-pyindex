@@ -1,0 +1,50 @@
+name: Build ARM Wheels
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'packages.toml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install toml build wheel
+    
+    - name: Set up QEMU for ARM emulation
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: arm
+    
+    - name: Build wheels for ARM
+      run: |
+        python build_wheels.py
+    
+    - name: Generate index
+      run: |
+        python generate_index.py
+    
+    - name: Upload wheels artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: wheels
+        path: dist/
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
+        force_orphan: true
